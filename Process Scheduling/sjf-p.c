@@ -48,7 +48,8 @@ void sort(int **queue, int a, int b, int param)
 
 int main()
 {
-	int unit, proc, *preempt_times=NULL, i=0, j=0, preempt_count=1, CLOCK=0, N, TAT=0, WT=0, TT=0, **queue=NULL, prev_proc, prev_time, pq=0, x, y, maxx, maxy, Q, a, b, c, dec;
+	int unit, proc, i=0, CLOCK=0, N, TT=0, **queue=NULL,x, y, maxx, maxy, Q, c, dec, wait;
+	float TAT=0, WT=0;
 	char file[32];
 	FILE *fp;
 	initscr();
@@ -75,7 +76,6 @@ int main()
 
 		queue[i-1][3]=i-1;
 		fscanf(fp, "%d%d", &(queue[i-1][1]), &(queue[i-1][0]));	//ArrT, bT
-//		printf("\n\n");
 		TT+=queue[i-1][0];
 	}
 	fclose(fp);
@@ -92,7 +92,6 @@ int main()
 	y+=2;
 	unit=maxx/TT;
 	x=(maxx-(TT*unit))/2;
-//	mvprintw(y+1, x, "0");
 	move(x, y);
 	WT=TT=0;
 	c=0;
@@ -101,10 +100,11 @@ int main()
 	while(c<N)
 	{
 		proc = 0;
-		for(i=0; i<N; i++)
+		for(i=wait=0; i<N; i++)
 		{
 			if(queue[i][0] == 9999 || CLOCK<queue[i][1])
 				continue;
+			wait++;
 			if(queue[i][0] < queue[proc][0])
 				proc = i;
 		}
@@ -116,7 +116,7 @@ int main()
 
 		CLOCK+=dec;
 		queue[proc][0]-=dec;
-		WT+=(N-c-1)*dec;
+		WT+=wait*dec;
 		if(queue[proc][0]==0)
 		{
 			TT+=CLOCK;

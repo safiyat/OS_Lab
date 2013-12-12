@@ -33,12 +33,14 @@ int menu()
 		mvprintw(maxy / 2 - 5, (maxx - 4)/ 2, "MENU");
 		mvprintw(maxy / 2 - 3, (maxx - 6)/ 2, "1. FCFS");
 		mvprintw(maxy / 2-2, (maxx - 6)/ 2, "2. SSTF");
-		mvprintw(maxy / 2 - 1, (maxx - 6)/ 2, "3. SCAN1");
-		mvprintw(maxy / 2, (maxx - 6)/ 2, "4. SCAN2");
-		mvprintw(maxy / 2 + 1, (maxx - 6)/ 2, "5. Exit");
-		mvprintw(maxy / 2 + 3, (maxx - 14)/ 2, "Enter choice: ");
+		mvprintw(maxy / 2 - 1, (maxx - 6)/ 2, "3. SCAN");
+		mvprintw(maxy / 2, (maxx - 6)/ 2, "4. C-SCAN");
+		mvprintw(maxy / 2 + 1, (maxx - 6)/ 2, "5. LOOK");
+		mvprintw(maxy / 2 + 2, (maxx - 6)/ 2, "6. C-LOOK");
+		mvprintw(maxy / 2 + 3, (maxx - 6)/ 2, "7. Exit");
+		mvprintw(maxy / 2 + 4, (maxx - 14)/ 2, "Enter choice: ");
 		ch = getch() - 48;
-	}while(ch < 1 || ch > 5);
+	}while(ch < 1 || ch > 7);
 	return ch;
 }
 
@@ -181,7 +183,7 @@ void sstf(const int n, int start, const int qs, const int *queue)
 	echo();
 }
 
-void scan1(const int n, int start, const int qs, const int *queue)
+void scan(const int n, int start, const int qs, const int *queue)
 {
 	int num, step, i, diff, sp, *temp, total;
 	float unit;
@@ -215,7 +217,216 @@ void scan1(const int n, int start, const int qs, const int *queue)
 	num = 1;
 	total = 0;
 	attron(A_BOLD);
-	mvprintw(0, (maxx - 40)/2, "Shortest Seek Time First Disk Scheduling");
+	mvprintw(0, (maxx - 20)/2, "SCAN Disk Scheduling");
+	mvprintw(2, 1, "%d", num);
+	num = step;
+	while(num<=n)
+	{
+		mvprintw(2, unit * num, "%d", num);
+		num += step;
+	}
+	mvprintw(2, unit * n, "%d", n);
+	mvhline(3, 1, 0, maxx - 2);
+
+	attroff(A_BOLD);
+
+	num = 0;
+	step = 5;
+
+	for(i = 0; i < qs; i++)
+	{
+		if(temp[i] > start)
+			break;
+	}
+	sp = i;
+
+	for( i = sp ; i< qs; i++ , step+=2)
+	{
+		mvhline(step, start * unit, 0, (temp[i] - start + 1) * unit);
+		mvprintw(step, temp[i]*unit, ">");
+		total += temp[i] - start;
+
+		step++;
+		mvprintw(step, start * unit, "%d", start);
+		mvprintw(step, temp[i] * unit, "%d", temp[i]);
+		start = temp[i];
+	}
+	if(start < n-1)
+	{
+		mvhline(step, start * unit, 0, (n - start) * unit);
+		mvprintw(step, (n-1)*unit - 1, ">");
+		total+= n-start;
+		start = n-1;
+		step+=2;
+	}
+	sp--;
+	for( i = sp ; i >= 0; i-- , step+=2)
+	{
+		mvhline(step, temp[i] * unit, 0, (start - temp[i] + 1) * unit);
+		mvprintw(step, temp[i]*unit, "<");
+		total += start - temp[i];
+
+		step++;
+		if(start != n-1)
+		mvprintw(step, start * unit, "%d", start);
+		mvprintw(step, temp[i] * unit, "%d", temp[i]);
+
+		start = temp[i];
+	}
+	if(start > 1)
+	{
+		mvhline(step, 1, 0, (start) * unit);
+		mvprintw(step, 1, "<");
+		total+= start;
+		step+=2;
+	}
+
+	attron(A_BOLD);
+	mvprintw(maxy - 2, (maxx - 24)/2, "Total Head Movement: %d", total);
+	attroff(A_BOLD);
+
+	noecho();
+	getch();
+	echo();
+}
+
+void cscan(const int n, int start, const int qs, const int *queue)
+{
+	int num, step, i, diff, sp, *temp, total;
+	float unit;
+
+	temp = (int *)malloc(sizeof(int) * qs);
+	for(i = 0; i < qs; i++)
+		temp[i] = queue[i];
+
+	for(i = 0; i < qs; i++)
+	{
+		for(diff = i; diff < qs; diff++)
+		{
+			if(temp[i]>temp[diff])
+			{
+				step = temp[i];
+				temp[i] = temp[diff];
+				temp[diff] = step;
+			}
+		}
+	}
+
+	maxx = getmaxx(stdscr);
+	maxy = getmaxy(stdscr);
+	
+	step = n / 10;
+
+	unit = (float)maxx / n;
+
+	werase(stdscr);
+	rectangle(1, 0, maxy - 1, maxx - 1);
+	num = 1;
+	total = 0;
+	attron(A_BOLD);
+	mvprintw(0, (maxx - 22)/2, "C-SCAN Disk Scheduling");
+	mvprintw(2, 1, "%d", num);
+	num = step;
+	while(num<=n)
+	{
+		mvprintw(2, unit * num, "%d", num);
+		num += step;
+	}
+	mvprintw(2, unit * n, "%d", n);
+	mvhline(3, 1, 0, maxx - 2);
+
+	attroff(A_BOLD);
+
+	num = 0;
+	step = 5;
+
+	for(i = 0; i < qs; i++)
+	{
+		if(temp[i] > start)
+			break;
+	}
+	sp = i;
+
+	for( i = sp ; i< qs; i++ , step+=2)
+	{
+		mvhline(step, start * unit, 0, (temp[i] - start + 1) * unit);
+		mvprintw(step, temp[i]*unit, ">");
+		total += temp[i] - start;
+
+		step++;
+		mvprintw(step, start * unit, "%d", start);
+		mvprintw(step, temp[i] * unit, "%d", temp[i]);
+		start = temp[i];
+	}
+	if(start < n-1)
+	{
+		mvhline(step, start * unit, 0, (n - start) * unit);
+		mvprintw(step, (n-1)*unit - 1, ">");
+		total+= n-start;
+		start = n-1;
+		step+=2;
+		
+		mvhline(step, 1, 0, start * unit - 1);
+		mvprintw(step, 1, "<");
+		total+= start;
+		start = 1;
+		step+=2;
+	}
+	for( i = 0; i< sp; i++ , step+=2)
+	{
+		mvhline(step, start * unit + 1, 0, (temp[i] - start + 1) * unit);
+		mvprintw(step, temp[i]*unit, ">");
+		total += temp[i] - start;
+
+		step++;
+		mvprintw(step, start * unit + 1, "%d", start);
+		mvprintw(step, temp[i] * unit, "%d", temp[i]);
+		start = temp[i];
+	}
+	attron(A_BOLD);
+	mvprintw(maxy - 2, (maxx - 24)/2, "Total Head Movement: %d", total);
+	attroff(A_BOLD);
+
+	noecho();
+	getch();
+	echo();
+}
+
+void look(const int n, int start, const int qs, const int *queue)
+{
+	int num, step, i, diff, sp, *temp, total;
+	float unit;
+
+	temp = (int *)malloc(sizeof(int) * qs);
+	for(i = 0; i < qs; i++)
+		temp[i] = queue[i];
+
+	for(i = 0; i < qs; i++)
+	{
+		for(diff = i; diff < qs; diff++)
+		{
+			if(temp[i]>temp[diff])
+			{
+				step = temp[i];
+				temp[i] = temp[diff];
+				temp[diff] = step;
+			}
+		}
+	}
+
+	maxx = getmaxx(stdscr);
+	maxy = getmaxy(stdscr);
+	
+	step = n / 10;
+
+	unit = (float)maxx / n;
+
+	werase(stdscr);
+	rectangle(1, 0, maxy - 1, maxx - 1);
+	num = 1;
+	total = 0;
+	attron(A_BOLD);
+	mvprintw(0, (maxx - 20)/2, "LOOK Disk Scheduling");
 	mvprintw(2, 1, "%d", num);
 	num = step;
 	while(num<=n)
@@ -273,7 +484,7 @@ void scan1(const int n, int start, const int qs, const int *queue)
 	echo();
 }
 
-void scan2(const int n, int start, const int qs, const int *queue)
+void clook(const int n, int start, const int qs, const int *queue)
 {
 	int num, step, i, diff, sp, *temp, total;
 	float unit;
@@ -307,7 +518,7 @@ void scan2(const int n, int start, const int qs, const int *queue)
 	num = 1;
 	total = 0;
 	attron(A_BOLD);
-	mvprintw(0, (maxx - 40)/2, "Shortest Seek Time First Disk Scheduling");
+	mvprintw(0, (maxx - 22)/2, "C-LOOK Disk Scheduling");
 	mvprintw(2, 1, "%d", num);
 	num = step;
 	while(num<=n)
@@ -328,21 +539,8 @@ void scan2(const int n, int start, const int qs, const int *queue)
 		if(temp[i] > start)
 			break;
 	}
-	sp = i - 1;
-	
-	for( i = sp ; i >= 0; i-- , step+=2)
-	{
-		mvhline(step, temp[i] * unit, 0, (start - temp[i] + 1) * unit);
-		mvprintw(step, temp[i]*unit, "<");
-		total += start - temp[i];
+	sp = i;
 
-		step++;
-		mvprintw(step, start * unit, "%d", start);
-		mvprintw(step, temp[i] * unit, "%d", temp[i]);
-
-		start = temp[i];
-	}
-	sp++;
 	for( i = sp ; i< qs; i++ , step+=2)
 	{
 		mvhline(step, start * unit, 0, (temp[i] - start + 1) * unit);
@@ -354,8 +552,24 @@ void scan2(const int n, int start, const int qs, const int *queue)
 		mvprintw(step, temp[i] * unit, "%d", temp[i]);
 		start = temp[i];
 	}
+		
+	mvhline(step, temp[0] * unit, 0, (start - temp[0]) * unit);
+	mvprintw(step, temp[0] * unit, "<");
+	total+= start - temp[0];
+	start = temp[0];
+	step+=2;
 
+	for( i = 1; i < sp; i++ , step+=2)
+	{
+		mvhline(step, start * unit + 1, 0, (temp[i] - start + 1) * unit);
+		mvprintw(step, temp[i]*unit, ">");
+		total += temp[i] - start;
 
+		step++;
+		mvprintw(step, start * unit + 1, "%d", start);
+		mvprintw(step, temp[i] * unit, "%d", temp[i]);
+		start = temp[i];
+	}
 	attron(A_BOLD);
 	mvprintw(maxy - 2, (maxx - 24)/2, "Total Head Movement: %d", total);
 	attroff(A_BOLD);
@@ -431,13 +645,19 @@ int main(void)
 			case 2: sstf(n, start, qs, queue);
 					break;
 
-			case 3: scan1(n, start, qs, queue);
+			case 3: scan(n, start, qs, queue);
 					break;
 			
-			case 4: scan2(n, start, qs, queue);
+			case 4: cscan(n, start, qs, queue);
 					break;
 
-			case 5:	endwin();
+			case 5: look(n, start, qs, queue);
+					break;
+
+			case 6: clook(n, start, qs, queue);
+					break;
+
+			case 7:	endwin();
 					return 0;
 		}
 	}

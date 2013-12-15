@@ -59,7 +59,6 @@ int main()
 	y+=2;
 	unit=maxx/TT;
 	x=(maxx-(TT*unit))/2;
-//	mvprintw(y+1, x, "0");
 	move(x, y);
 	WT=TT=0;
 	c=0;
@@ -71,11 +70,11 @@ int main()
 		if(bt[i]==0)
 			continue;
 		dec=min(bt[i], Q);
-			
+
 		rectangle(y, x, y+2, x+(dec*unit));
 		mvprintw(y+1, x+(dec*unit/2), "P%d", i+1);
 		mvprintw(y+4, x, "%d", CLOCK);
-		
+
 		CLOCK+=dec;
 		bt[i]-=dec;
 		WT+=(n-c-1)*dec;

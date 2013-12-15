@@ -365,13 +365,14 @@ void cscan(const int n, int start, const int qs, const int *queue)
 		total+= n-start;
 		start = n-1;
 		step+=2;
-		
-		mvhline(step, 1, 0, start * unit - 1);
-		mvprintw(step, 1, "<");
-		total+= start;
-		start = 1;
-		step+=2;
 	}
+
+	mvhline(step, 1, 0, start * unit - 1);
+	mvprintw(step, 1, "<");
+	total+= start;
+	start = 1;
+	step+=2;
+	
 	for( i = 0; i< sp; i++ , step+=2)
 	{
 		mvhline(step, start * unit + 1, 0, (temp[i] - start + 1) * unit);
